@@ -18,7 +18,11 @@ jobs:
         run: make STATIC=1
       - name: Rename invidious binary
         run: mv invidious invidious.amd64
+      - name: Check date for version number
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y.%m.%d')"
       - name: Publish invidious static build
         uses: ncipollo/release-action@v1
         with:
           artifacts: "invidious.amd64"
+          tag: "v${{ steps.date.outputs.date }}"
