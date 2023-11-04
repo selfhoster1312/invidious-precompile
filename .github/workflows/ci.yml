@@ -7,7 +7,7 @@ jobs:
       image: crystallang/crystal:latest-alpine
     steps:
       - name: Download source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: iv-org/invidious
       - name: Install libsqlite3 static build
@@ -16,8 +16,9 @@ jobs:
         run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
       - name: Build invidious
         run: make STATIC=1
+      - name: Rename invidious binary
+        run: mv invidious invidious.amd64
       - name: Publish invidious static build
-        uses: actions/upload-artifact@v3
+        uses: ncipollo/release-action@v1
         with:
-          name: invidious.x86_64
-          path: invidious
+          artifacts: "invidious.amd64"
