@@ -12,6 +12,8 @@ jobs:
           repository: iv-org/invidious
       - name: Install libsqlite3 static build
         run: apk add sqlite-static
+      - name: Fix containerization git permission weirdness
+        run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
       - name: Build invidious
         run: make STATIC=1
       - name: Publish invidious static build
