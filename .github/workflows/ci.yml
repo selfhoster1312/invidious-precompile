@@ -4,7 +4,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: crystallang/crystal:latest
+      image: crystallang/crystal:latest-alpine
     steps:
       - name: Download source
         uses: actions/checkout@v2
