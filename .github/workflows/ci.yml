@@ -9,7 +9,9 @@ jobs:
       - name: Download source
         uses: actions/checkout@v3
         with:
-          repository: iv-org/invidious      
+          #repository: iv-org/invidious      
+          repository: selfhoster1312/invidious
+          ref: config-ca-certs
       - name: Save release date
         run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Set up QEMU
