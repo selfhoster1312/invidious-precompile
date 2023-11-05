@@ -88,7 +88,7 @@ jobs:
         - name: Display SHA256 sum for x86_64
           run: sha256sum invidious.x86_64.tar.xz
         - name: Display SHA256 sum for aarch64
-          run: sha256sum invidious.x86_64.tar.xz
+          run: sha256sum invidious.aarch64.tar.xz
         - name: Publish invidious static build
           uses: ncipollo/release-action@v1
           with:
