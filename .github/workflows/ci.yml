@@ -17,7 +17,7 @@ jobs:
       - name: Run setup inside qemu aarch64/arm64
         uses: addnab/docker-run-action@v3
         with:
-            image: crystallang/crystal:latest-alpine
+            image: 84codes/crystal:latest-alpine
             options: |
               --platform linux/arm64
               --volume ${{ github.workspace }}:/build
