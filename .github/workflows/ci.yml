@@ -18,13 +18,15 @@ jobs:
         run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
       - name: Build invidious
         run: make STATIC=1
-      - name: Rename invidious binary
-        run: mv invidious invidious.amd64
+      - name: Compress binary, config and locales
+        run: tar CfJ invidious.x86_64.tar.xz invidious locales config
+      - name: Display SHA256 sum for archive
+        run: sha256sum invidious.x86_64.tar.xz
       - name: Check date for version number
         id: date
         run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Publish invidious static build
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "invidious.amd64"
-          tag: "v${{ env.date }}"
+          artifacts: "invidious.x86_64.tar.xz"
+          tag: "v${{ env.date }}.{{ github.sha }}"
