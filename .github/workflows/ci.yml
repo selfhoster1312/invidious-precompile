@@ -3,7 +3,7 @@ on:
 permissions:
   contents: write
 jobs:
-  build:
+  aarch64:
     runs-on: ubuntu-latest
     steps:
       - name: Download source
@@ -27,47 +27,73 @@ jobs:
             run: |
               ## Install sqlite-static, xz and other common crystal deps
               uname -m
-              pwd
               apk add sqlite-static xz gcc gmp-dev libevent-static musl-dev pcre-dev pcre2-dev gc-dev libxml2-dev libxml2-static tzdata yaml-static zlib-static xz-static
-              ##git clone https://github.com/iv-org/invidious /build/invidious
-              ##cd /build/invidious
-              ##git config --global --add safe.directory /build/invidious
               git config --global --add safe.directory /build
-              ls
               make STATIC=1
-              pwd
-              echo "here i am"
-              ls
-              tar -cJf invidious.aarch64.tar.xz invidious locales config
-              sha256sum invidious.aarch64.tar.xz
-      - name: Publish invidious static build
-        uses: ncipollo/release-action@v1
+              tar -cJf invidious.aarch64.tar.xz invidious
+      - name: Save aarch64 build for later publishing
+        uses: actions/upload-artifact@v3
         with:
-          artifacts: "invidious.aarch64.tar.xz"
-          tag: "v${{ env.date }}.${{ github.sha }}"  # build:
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: crystallang/crystal:latest-alpine
-  #   steps:
-  #     - name: Download source
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: iv-org/invidious
-  #     - name: Install libsqlite3 static build and xz for better compression
-  #       run: apk add sqlite-static xz
-  #     - name: Fix containerization git permission weirdness
-  #       run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
-  #     - name: Build invidious
-  #       run: make STATIC=1
-  #     - name: Compress binary, config and locales
-  #       run: tar -cJf invidious.x86_64.tar.xz invidious locales config
-  #     - name: Display SHA256 sum for archive
-  #       run: sha256sum invidious.x86_64.tar.xz
-  #     - name: Check date for version number
-  #       id: date
-  #       run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
-  #     - name: Publish invidious static build
-  #       uses: ncipollo/release-action@v1
-  #       with:
-  #         artifacts: "invidious.x86_64.tar.xz"
-  #         tag: "v${{ env.date }}.${{ github.sha }}"
+          name: invidious.aarch64.tar.xz
+          path: invidious.aarch64.tar.xz
+  x86_64:
+    runs-on: ubuntu-latest
+    container:
+      image: crystallang/crystal:latest-alpine
+    steps:
+      - name: Download source
+        uses: actions/checkout@v3
+        with:
+          repository: iv-org/invidious
+      - name: Install libsqlite3 static build and xz for better compression
+        run: apk add sqlite-static xz
+      - name: Fix containerization git permission weirdness
+        run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
+      - name: Build invidious
+        run: make STATIC=1
+      - name: Compress binary, config and locales
+        run: tar -cJf invidious.x86_64.tar.xz invidious locales config
+      - name: Package assets into invidious.common.tar.xz
+        run: tar -cJf invidious.common.tar.xz assets config locales
+      - name: Save assets for later publishing
+        uses: actions/upload-artifact@v3
+        with:
+          name: invidious.common.tar.xz
+          path: invidious.common.tar.xz
+      - name: Save x86_64 build for later publishing
+        uses: actions/upload-artifact@v3
+        with:
+          name: invidious.x86_64.tar.xz
+          path: invidious.x86_64.tar.xz
+  publish:
+      runs-on: ubuntu-latest
+      needs: [ x86_64, aarch64 ]
+      steps:
+        - name: Check date for version number
+          run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
+        - name: Download invidious assets
+          uses: actions/download-artifact@v3
+          with:
+            name: invidious.common.tar.xz
+            path: invidious.common.tar.xz
+        - name: Download invidious x86_64
+          uses: actions/download-artifact@v3
+          with:
+            name: invidious.x86_64.tar.xz
+            path: invidious.x86_64.tar.xz
+        - name: Download invidious aarch64
+          uses: actions/download-artifact@v3
+          with:
+            name: invidious.aarch64.tar.xz
+            path: invidious.aarch64.tar.xz
+        - name: Display SHA256 sum for assets
+          run: sha256sum invidious.common.tar.xz
+        - name: Display SHA256 sum for x86_64
+          run: sha256sum invidious.x86_64.tar.xz
+        - name: Display SHA256 sum for aarch64
+          run: sha256sum invidious.x86_64.tar.xz
+        - name: Publish invidious static build
+          uses: ncipollo/release-action@v1
+          with:
+            artifacts: "invidious.common.tar.xz,invidious.x86_64.tar.xz,invidious.aarch64.tar.xz"
+            tag: "v${{ env.date }}.${{ github.sha }}"
