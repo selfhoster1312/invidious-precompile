@@ -10,6 +10,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: iv-org/invidious      
+      - name: Save release date
+        run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
@@ -24,12 +26,20 @@ jobs:
               --workdir /build
             run: |
               ## Install sqlite-static, xz and other common crystal deps
-              apk add qslite-static xz gcc gmp-dev libevent-static musl-dev pcre-dev pcre2-dev gc-dev libxml2-dev libxml2-static openssl-dev openssl-libs-static tzdata yaml-static zlib-static xz-static
+              uname -m
+              pwd
+              apk add sqlite-static xz gcc gmp-dev libevent-static musl-dev pcre-dev pcre2-dev gc-dev libxml2-dev libxml2-static tzdata yaml-static zlib-static xz-static
+              ##git clone https://github.com/iv-org/invidious /build/invidious
+              ##cd /build/invidious
+              ##git config --global --add safe.directory /build/invidious
               git config --global --add safe.directory /build
+              ls
               make STATIC=1
+              pwd
+              echo "here i am"
+              ls
               tar -cJf invidious.aarch64.tar.xz invidious locales config
               sha256sum invidious.aarch64.tar.xz
-              echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Publish invidious static build
         uses: ncipollo/release-action@v1
         with:
