@@ -5,28 +5,58 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: crystallang/crystal:latest-alpine
     steps:
       - name: Download source
         uses: actions/checkout@v3
         with:
-          repository: iv-org/invidious
-      - name: Install libsqlite3 static build and xz for better compression
-        run: apk add sqlite-static xz
-      - name: Fix containerization git permission weirdness
-        run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
-      - name: Build invidious
-        run: make STATIC=1
-      - name: Compress binary, config and locales
-        run: tar -cJf invidious.x86_64.tar.xz invidious locales config
-      - name: Display SHA256 sum for archive
-        run: sha256sum invidious.x86_64.tar.xz
-      - name: Check date for version number
-        id: date
-        run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
+          repository: iv-org/invidious      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+      - name: Run setup inside qemu aarch64/arm64
+        uses: addnab/docker-run-action@v3
+        with:
+            image: crystallang/crystal:latest-alpine
+            options: |
+              --platform linux/arm64
+              --volume ${{ github.workspace }}:/build
+              --workdir /build
+            run: |
+              apk add qslite-static xz
+              git config --global --add safe.directory /build
+              make STATIC=1
+              tar -cJf invidious.aarch64.tar.xz invidious locales config
+              sha256sum invidious.aarch64.tar.xz
+              echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Publish invidious static build
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "invidious.x86_64.tar.xz"
-          tag: "v${{ env.date }}.${{ github.sha }}"
+          artifacts: "invidious.aarch64.tar.xz"
+          tag: "v${{ env.date }}.${{ github.sha }}"  # build:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: crystallang/crystal:latest-alpine
+  #   steps:
+  #     - name: Download source
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: iv-org/invidious
+  #     - name: Install libsqlite3 static build and xz for better compression
+  #       run: apk add sqlite-static xz
+  #     - name: Fix containerization git permission weirdness
+  #       run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
+  #     - name: Build invidious
+  #       run: make STATIC=1
+  #     - name: Compress binary, config and locales
+  #       run: tar -cJf invidious.x86_64.tar.xz invidious locales config
+  #     - name: Display SHA256 sum for archive
+  #       run: sha256sum invidious.x86_64.tar.xz
+  #     - name: Check date for version number
+  #       id: date
+  #       run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
+  #     - name: Publish invidious static build
+  #       uses: ncipollo/release-action@v1
+  #       with:
+  #         artifacts: "invidious.x86_64.tar.xz"
+  #         tag: "v${{ env.date }}.${{ github.sha }}"
