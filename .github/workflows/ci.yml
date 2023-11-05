@@ -1,5 +1,7 @@
 on:
   push:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,9 +22,9 @@ jobs:
         run: mv invidious invidious.amd64
       - name: Check date for version number
         id: date
-        run: echo "::set-output name=date::$(date +'%Y.%m.%d')"
+        run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Publish invidious static build
         uses: ncipollo/release-action@v1
         with:
           artifacts: "invidious.amd64"
-          tag: "v${{ steps.date.outputs.date }}"
+          tag: "v${{ env.date }}"
