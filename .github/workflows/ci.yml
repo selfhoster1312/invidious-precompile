@@ -23,7 +23,8 @@ jobs:
               --volume ${{ github.workspace }}:/build
               --workdir /build
             run: |
-              apk add qslite-static xz
+              ## Install sqlite-static, xz and other common crystal deps
+              apk add qslite-static xz gcc gmp-dev libevent-static musl-dev pcre-dev pcre2-dev gc-dev libxml2-dev libxml2-static openssl-dev openssl-libs-static tzdata yaml-static zlib-static xz-static
               git config --global --add safe.directory /build
               make STATIC=1
               tar -cJf invidious.aarch64.tar.xz invidious locales config
