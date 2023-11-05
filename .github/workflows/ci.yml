@@ -75,17 +75,14 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: invidious.common.tar.xz
-            path: invidious.common.tar.xz
         - name: Download invidious x86_64
           uses: actions/download-artifact@v3
           with:
             name: invidious.x86_64.tar.xz
-            path: invidious.x86_64.tar.xz
         - name: Download invidious aarch64
           uses: actions/download-artifact@v3
           with:
             name: invidious.aarch64.tar.xz
-            path: invidious.aarch64.tar.xz
         - name: Display SHA256 sum for assets
           run: sha256sum invidious.common.tar.xz
         - name: Display SHA256 sum for x86_64
