@@ -12,8 +12,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: iv-org/invidious
-      - name: Install libsqlite3 static build
-        run: apk add sqlite-static
+      - name: Install libsqlite3 static build and xz for better compression
+        run: apk add sqlite-static xz
       - name: Fix containerization git permission weirdness
         run: git config --global --add safe.directory /__w/invidious-precompile/invidious-precompile
       - name: Build invidious
