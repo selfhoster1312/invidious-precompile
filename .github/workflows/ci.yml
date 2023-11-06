@@ -11,7 +11,7 @@ jobs:
         with:
           #repository: iv-org/invidious      
           repository: selfhoster1312/invidious
-          ref: config-ca-certs
+          ref: config-ca-certs-test
       - name: Save release date
         run: echo "date=$(date +'%Y.%m.%d')" >> "$GITHUB_ENV"
       - name: Set up QEMU
